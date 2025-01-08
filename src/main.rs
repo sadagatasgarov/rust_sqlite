@@ -17,7 +17,6 @@ async fn create_schema(db_url: &str) -> Result<SqliteQueryResult, sqlx::Error>{
     (
         project_id      INTEGER     
     );
-
     "#;
 
     let result = sqlx::query(&qry).execute(&pool).await;
@@ -37,4 +36,9 @@ async fn main() {
             Err(e) => panic!("{}", e)
         }
     }
+    let instance = SqlitePool::connect(&db_url).await.unwrap();
+    let qry = "INSERT INTO settings (description) VALUES($1)";
+    let result = sqlx::query(&qry).bind("testing").execute(&instance).await.unwrap();
+    instance.close().await;
+    println!("{:#?}", result)
 }
