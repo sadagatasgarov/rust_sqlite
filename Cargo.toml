@@ -1,0 +1,9 @@
+[package]
+name = "rust_and_sqlite"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlx = { version = "*", features = ["runtime-async-std-native-tls", "sqlite"]}
+async-std ={ version = "*", features = ["attributes"]}
+futures = "*"
