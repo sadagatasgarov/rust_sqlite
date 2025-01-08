@@ -1,10 +1,10 @@
-use std::result::Result;
+use std::{f32::consts::E, result::Result};
 use sqlx::{migrate::MigrateDatabase, pool, sqlite::SqliteQueryResult, Sqlite, SqlitePool};
 
 async fn create_schema(db_url: &str) -> Result<SqliteQueryResult, sqlx::Error>{
     let pool = SqlitePool::connect(&db_url).await?;
     let qry = r#"
-    CREATE TABLE IS NOT EXISTS settings
+    CREATE TABLE IF NOT EXISTS settings
     (
         settings_id     INTEGER PRIMARY KEY     NOT NULL,
         description     TEXT                    NOT NULL,
@@ -13,11 +13,11 @@ async fn create_schema(db_url: &str) -> Result<SqliteQueryResult, sqlx::Error>{
         done            BOOLEAN                 NOT NULL DEFAULT 0
     );
 
-    CREATE TABLE IS NOT EXISTS settings
+    CREATE TABLE IF NOT EXISTS project
     (
         project_id      INTEGER     
     );
-    
+
     "#;
 
     let result = sqlx::query(&qry).execute(&pool).await;
@@ -29,5 +29,12 @@ async fn create_schema(db_url: &str) -> Result<SqliteQueryResult, sqlx::Error>{
 
 #[async_std::main]
 async fn main() {
-
+    let db_url = String::from("sqlite://sqlite.db");
+    if !Sqlite::database_exists(&db_url).await.unwrap_or(false) {
+        Sqlite::create_database(&db_url).await.unwrap();
+        match create_schema(&db_url).await {
+            Ok(_) => println!("Databaza yaradildi"),
+            Err(e) => panic!("{}", e)
+        }
+    }
 }
